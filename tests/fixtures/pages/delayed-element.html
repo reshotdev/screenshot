@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delayed Element</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; }
+    button { padding: 8px 16px; }
+  </style>
+</head>
+<body>
+  <h1>Delayed Element Test</h1>
+  <div id="container">
+    <p>Loading...</p>
+  </div>
+  <script>
+    // On first load: no button. On reload (sessionStorage counter >= 1): show button.
+    var count = parseInt(sessionStorage.getItem('load-count') || '0', 10);
+    sessionStorage.setItem('load-count', String(count + 1));
+    if (count >= 1) {
+      document.getElementById('container').innerHTML =
+        '<button id="delayed-btn" data-testid="delayed-button">I appeared!</button>';
+    }
+  </script>
+</body>
+</html>

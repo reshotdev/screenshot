@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Ready</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; }
+  </style>
+</head>
+<body>
+  <h1>Custom Ready Test</h1>
+  <div id="content">
+    <p>Loading app data...</p>
+  </div>
+  <script>
+    // Simulate async data loading — marks ready after 1.5s
+    setTimeout(function() {
+      document.getElementById('content').innerHTML =
+        '<div data-ready="true"><p>App loaded!</p></div>';
+      window.__APP_READY = true;
+    }, 1500);
+  </script>
+</body>
+</html>
