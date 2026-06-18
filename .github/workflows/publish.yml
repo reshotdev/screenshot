@@ -27,6 +27,13 @@ jobs:
           TARBALL=$(ls /tmp/*.tgz)
           echo "Package size: $(du -h $TARBALL | cut -f1)"
           tar -tzf $TARBALL | head -40
-      - run: pnpm publish --provenance --access public --no-git-checks
+      - name: Publish to npm (skip if version already on registry)
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "@reshotdev/screenshot@$VERSION" version >/dev/null 2>&1; then
+            echo "v$VERSION is already published — skipping."
+          else
+            pnpm publish --provenance --access public --no-git-checks --tag latest
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
