@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Dashboard</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; }
+    button { padding: 8px 16px; cursor: pointer; }
+    input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <div class="card">
+    <h2>Quick Actions</h2>
+    <button id="action-btn" data-testid="action-button">Click Me</button>
+    <input id="search-input" type="text" placeholder="Search..." data-testid="search-input" />
+  </div>
+  <div class="card">
+    <h2>Info</h2>
+    <p id="status">Ready</p>
+  </div>
+  <script>
+    document.getElementById('action-btn').addEventListener('click', function() {
+      document.getElementById('status').textContent = 'Button clicked!';
+    });
+  </script>
+</body>
+</html>

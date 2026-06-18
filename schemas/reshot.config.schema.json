@@ -1,0 +1,623 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://reshot.dev/schemas/reshot.config.schema.json",
+  "title": "Reshot Configuration",
+  "description": "Configuration file for Reshot CLI visual documentation capture",
+  "type": "object",
+  "required": ["project", "scenarios"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for IDE validation support"
+    },
+    "project": {
+      "type": "object",
+      "description": "Project-level configuration",
+      "required": ["baseUrl"],
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL for the target application"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable project name"
+        },
+        "outputDir": {
+          "type": "string",
+          "description": "Output directory for generated assets (default: .reshot/output)"
+        },
+        "viewport": {
+          "type": "object",
+          "description": "Default viewport configuration",
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 320,
+              "maximum": 3840,
+              "default": 1280
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 240,
+              "maximum": 2160,
+              "default": 720
+            },
+            "deviceScaleFactor": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 3,
+              "default": 1
+            }
+          }
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 300000,
+          "description": "Default timeout in milliseconds (default: 30000)"
+        }
+      }
+    },
+    "storageStatePath": {
+      "type": "string",
+      "description": "Path to a Playwright storage-state JSON file (cookies + origins) used for authentication. Generate via `playwright codegen <url> --save-storage=<path>` or `reshot record`. Recommended for OAuth, magic-link, Supabase, Clerk, and Auth.js apps that cannot be scripted with `auth.loginSteps`."
+    },
+    "scenarios": {
+      "type": "array",
+      "description": "List of capture scenarios",
+      "items": {
+        "$ref": "#/definitions/scenario"
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "description": "Variation dimensions for multi-variant captures",
+      "additionalProperties": {
+        "$ref": "#/definitions/dimension"
+      }
+    },
+    "auth": {
+      "type": "object",
+      "description": "Authentication configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["cookie", "localStorage", "header", "basic", "oauth"],
+          "description": "Authentication method"
+        },
+        "credentials": {
+          "type": "object",
+          "description": "Credential configuration (use environment variables for secrets)",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "token": {
+              "type": "string"
+            },
+            "cookies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "value": { "type": "string" },
+                  "domain": { "type": "string" },
+                  "path": { "type": "string", "default": "/" }
+                },
+                "required": ["name", "value"]
+              }
+            }
+          }
+        },
+        "loginUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to login page for session-based auth"
+        },
+        "loginSteps": {
+          "type": "array",
+          "description": "Steps to perform login",
+          "items": {
+            "$ref": "#/definitions/step"
+          }
+        }
+      }
+    },
+    "diffing": {
+      "type": "object",
+      "description": "Visual diffing configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable visual diffing"
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.1,
+          "description": "Pixel difference threshold (0-1)"
+        },
+        "antialiasing": {
+          "type": "boolean",
+          "default": true,
+          "description": "Account for antialiasing differences"
+        },
+        "ignoreRegions": {
+          "type": "array",
+          "description": "Regions to ignore during comparison",
+          "items": {
+            "type": "object",
+            "properties": {
+              "x": { "type": "integer" },
+              "y": { "type": "integer" },
+              "width": { "type": "integer" },
+              "height": { "type": "integer" }
+            },
+            "required": ["x", "y", "width", "height"]
+          }
+        }
+      }
+    },
+    "bindings": {
+      "type": "object",
+      "description": "Documentation file bindings",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "scenarios": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Scenario keys bound to this document"
+          },
+          "autoUpdate": {
+            "type": "boolean",
+            "default": true,
+            "description": "Automatically update images in this file"
+          }
+        }
+      }
+    },
+    "capture": {
+      "type": "object",
+      "description": "Global capture reliability settings",
+      "properties": {
+        "retryOnError": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "default": 2,
+          "description": "Number of retries when error state is detected on a page"
+        },
+        "retryDelay": {
+          "type": "integer",
+          "minimum": 500,
+          "maximum": 30000,
+          "default": 1000,
+          "description": "Base delay between retries in milliseconds (exponential backoff)"
+        },
+        "readyTimeout": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 60000,
+          "default": 15000,
+          "description": "Timeout for waiting for page ready state"
+        },
+        "scenarioTimeout": {
+          "type": "integer",
+          "minimum": 5000,
+          "maximum": 300000,
+          "default": 60000,
+          "description": "Overall timeout for a single scenario execution"
+        },
+        "errorSelectors": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "CSS selectors that indicate an error state on the page"
+        },
+        "errorHeuristics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable heuristic error detection (text pattern matching)"
+        },
+        "contentVerification": {
+          "type": "boolean",
+          "default": false,
+          "description": "Verify page has meaningful content before capturing"
+        },
+        "preflightCheck": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run auth pre-flight check before scenario execution"
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "description": "Feature toggles",
+      "properties": {
+        "captureVideo": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable video capture"
+        },
+        "captureNetwork": {
+          "type": "boolean",
+          "default": false,
+          "description": "Capture network requests"
+        },
+        "captureConsole": {
+          "type": "boolean",
+          "default": false,
+          "description": "Capture console logs"
+        },
+        "generateSubtitles": {
+          "type": "boolean",
+          "default": false,
+          "description": "Generate subtitles/captions"
+        }
+      }
+    },
+    "privacy": {
+      "$ref": "#/definitions/privacyConfig",
+      "description": "Global PII masking configuration"
+    },
+    "style": {
+      "$ref": "#/definitions/styleConfig",
+      "description": "Global image beautification configuration"
+    }
+  },
+  "definitions": {
+    "privacyConfig": {
+      "type": "object",
+      "description": "Privacy masking configuration for PII redaction",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable privacy masking"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["redact", "blur", "hide", "remove"],
+          "default": "redact",
+          "description": "Default masking method"
+        },
+        "blurRadius": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 8,
+          "description": "Blur radius in pixels (used when method is 'blur')"
+        },
+        "selectors": {
+          "type": "array",
+          "description": "CSS selectors for elements to mask",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "CSS selector string"
+              },
+              {
+                "type": "object",
+                "required": ["selector"],
+                "properties": {
+                  "selector": {
+                    "type": "string",
+                    "description": "CSS selector"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": ["redact", "blur", "hide", "remove"],
+                    "description": "Override masking method for this selector"
+                  },
+                  "blurRadius": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Override blur radius for this selector"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "styleConfig": {
+      "type": "object",
+      "description": "Image beautification configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable image styling"
+        },
+        "frame": {
+          "type": "string",
+          "enum": ["none", "macos", "windows"],
+          "default": "none",
+          "description": "Window frame style to add"
+        },
+        "shadow": {
+          "type": "string",
+          "enum": ["none", "small", "medium", "large"],
+          "default": "medium",
+          "description": "Drop shadow size"
+        },
+        "padding": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 200,
+          "default": 40,
+          "description": "Padding around the image in pixels"
+        },
+        "background": {
+          "type": "string",
+          "default": "transparent",
+          "description": "Background color (hex, 'transparent', or 'linear-gradient(...)')"
+        },
+        "borderRadius": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 0,
+          "description": "Corner radius in pixels"
+        }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "required": ["key"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-_/]*[a-z0-9]$|^[a-z0-9]$",
+          "description": "Unique identifier for the scenario (URL-safe)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of what this scenario captures"
+        },
+        "targetUrl": {
+          "type": "string",
+          "description": "Starting URL for this scenario (relative to baseUrl)"
+        },
+        "steps": {
+          "type": "array",
+          "description": "Steps to execute in this scenario",
+          "items": {
+            "$ref": "#/definitions/step"
+          }
+        },
+        "viewport": {
+          "type": "object",
+          "description": "Override viewport for this scenario",
+          "properties": {
+            "width": { "type": "integer" },
+            "height": { "type": "integer" },
+            "deviceScaleFactor": { "type": "number" }
+          }
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Override timeout for this scenario"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tags for filtering/grouping"
+        },
+        "variants": {
+          "type": "array",
+          "description": "Specific variants to run for this scenario",
+          "items": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        },
+        "skip": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip this scenario during runs"
+        },
+        "readySelector": {
+          "type": "string",
+          "description": "CSS selector that indicates the page is fully loaded and ready for capture"
+        },
+        "errorSelectors": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "CSS selectors that indicate an error state (overrides global capture.errorSelectors)"
+        },
+        "readyTimeout": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 60000,
+          "description": "Timeout for waiting for readySelector (overrides global capture.readyTimeout)"
+        },
+        "retryOnError": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Number of retries on error (overrides global capture.retryOnError)"
+        },
+        "scenarioTimeout": {
+          "type": "integer",
+          "minimum": 5000,
+          "maximum": 300000,
+          "description": "Overall timeout for this scenario (overrides global capture.scenarioTimeout)"
+        },
+        "privacy": {
+          "$ref": "#/definitions/privacyConfig",
+          "description": "Scenario-level privacy overrides (selectors are additive with global)"
+        },
+        "style": {
+          "$ref": "#/definitions/styleConfig",
+          "description": "Scenario-level style overrides (flat replace of global)"
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": ["action"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["navigate", "click", "type", "hover", "scroll", "wait", "capture", "select", "press", "evaluate"],
+          "description": "Action to perform"
+        },
+        "selector": {
+          "type": "string",
+          "description": "CSS selector for the target element"
+        },
+        "url": {
+          "type": "string",
+          "description": "URL for navigate action"
+        },
+        "value": {
+          "type": "string",
+          "description": "Value for type/select actions"
+        },
+        "key": {
+          "type": "string",
+          "description": "Key for press action (e.g., 'Enter', 'Tab')"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name for capture action (used in filename)"
+        },
+        "delay": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Delay in milliseconds before this step"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Timeout for this step"
+        },
+        "waitFor": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "integer" },
+            {
+              "type": "object",
+              "properties": {
+                "selector": { "type": "string" },
+                "state": {
+                  "type": "string",
+                  "enum": ["attached", "detached", "visible", "hidden"]
+                },
+                "timeout": { "type": "integer" }
+              }
+            }
+          ],
+          "description": "Wait condition (selector, milliseconds, or config)"
+        },
+        "scroll": {
+          "type": "object",
+          "description": "Scroll configuration",
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" },
+            "behavior": {
+              "type": "string",
+              "enum": ["auto", "smooth"]
+            }
+          }
+        },
+        "evaluate": {
+          "type": "string",
+          "description": "JavaScript code to evaluate in page context"
+        },
+        "captureOptions": {
+          "type": "object",
+          "description": "Options for capture action",
+          "properties": {
+            "fullPage": { "type": "boolean" },
+            "clip": {
+              "type": "object",
+              "properties": {
+                "x": { "type": "integer" },
+                "y": { "type": "integer" },
+                "width": { "type": "integer" },
+                "height": { "type": "integer" }
+              }
+            },
+            "omitBackground": { "type": "boolean" },
+            "format": {
+              "type": "string",
+              "enum": ["png", "jpeg", "webp"]
+            },
+            "quality": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "if": {
+          "type": "string",
+          "description": "Conditional expression (JavaScript) - skip step if false"
+        },
+        "privacy": {
+          "$ref": "#/definitions/privacyConfig",
+          "description": "Step-level privacy overrides (selectors additive with scenario/global)"
+        },
+        "style": {
+          "$ref": "#/definitions/styleConfig",
+          "description": "Step-level style overrides"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of this step"
+        }
+      }
+    },
+    "dimension": {
+      "type": "object",
+      "description": "A dimension for multi-variant captures",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for this dimension"
+        },
+        "description": {
+          "type": "string"
+        },
+        "default": {
+          "type": "string",
+          "description": "Default option key"
+        },
+        "options": {
+          "type": "object",
+          "description": "Available options for this dimension",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "cookies": { "type": "array" },
+              "localStorage": { "type": "object" },
+              "headers": { "type": "object" },
+              "viewport": { "type": "object" },
+              "evaluate": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

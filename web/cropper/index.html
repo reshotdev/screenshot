@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reshot - Crop Screenshot</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    h1 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .instructions {
+      background: #2a2a2a;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      max-width: 800px;
+      font-size: 14px;
+      color: #aaa;
+    }
+    
+    .container {
+      position: relative;
+      display: inline-block;
+      max-width: 90vw;
+      max-height: 60vh;
+      border: 2px solid #444;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    #image {
+      display: block;
+      max-width: 100%;
+      max-height: 60vh;
+      user-select: none;
+    }
+    
+    #crop-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+    
+    #crop-rect {
+      position: absolute;
+      border: 2px solid #00ff00;
+      background: rgba(0, 255, 0, 0.1);
+      display: none;
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    }
+    
+    .resize-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #00ff00;
+      border: 1px solid #fff;
+    }
+    
+    .handle-nw { top: -5px; left: -5px; cursor: nw-resize; }
+    .handle-ne { top: -5px; right: -5px; cursor: ne-resize; }
+    .handle-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+    .handle-se { bottom: -5px; right: -5px; cursor: se-resize; }
+    
+    .options {
+      margin-top: 15px;
+      padding: 15px 20px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 600px;
+      width: 100%;
+    }
+    
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .option-row label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #ccc;
+    }
+    
+    .option-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #00ff00;
+    }
+    
+    .option-row input[type="number"] {
+      width: 60px;
+      padding: 6px 8px;
+      background: #333;
+      border: 1px solid #555;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    button {
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn-primary {
+      background: #00ff00;
+      color: #000;
+    }
+    
+    .btn-secondary {
+      background: #444;
+      color: #fff;
+    }
+    
+    .btn-secondary:hover {
+      background: #555;
+    }
+    
+    .crop-info {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background: #2a2a2a;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      color: #aaa;
+    }
+    
+    .message {
+      margin-top: 15px;
+      padding: 10px 15px;
+      border-radius: 4px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .message.success {
+      background: #00ff0020;
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      display: block;
+    }
+    
+    .help-text {
+      font-size: 12px;
+      color: #888;
+      margin-left: 26px;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📐 Crop Screenshot</h1>
+  
+  <div class="instructions">
+    Click and drag on the image to define the crop area. Drag the corners to resize. 
+    Enable "Apply to all subsequent captures" to reuse this crop for future screenshots in the same scenario.
+  </div>
+  
+  <div class="container" id="container">
+    <img id="image" src="/image" alt="Screenshot to crop">
+    <div id="crop-overlay">
+      <div id="crop-rect">
+        <div class="resize-handle handle-nw"></div>
+        <div class="resize-handle handle-ne"></div>
+        <div class="resize-handle handle-sw"></div>
+        <div class="resize-handle handle-se"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="crop-info" id="crop-info">
+    No crop defined yet
+  </div>
+  
+  <div class="options">
+    <div class="option-row">
+      <label>
+        <input type="checkbox" id="persist-crop" checked>
+        Apply to all subsequent captures in this scenario
+      </label>
+    </div>
+    <div class="help-text">
+      When enabled, all future screenshots and variations will use the same crop region automatically.
+    </div>
+    <div class="option-row">
+      <label>
+        Padding:
+        <input type="number" id="padding" value="0" min="0" max="100"> px
+      </label>
+    </div>
+    <div class="help-text">
+      Add uniform padding around the crop region for better visual framing.
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn-secondary" onclick="resetCrop()">Reset</button>
+    <button class="btn-primary" onclick="saveCrop()">Save Crop</button>
+  </div>
+  
+  <div class="message" id="message"></div>
+  
+  <script>
+    const image = document.getElementById('image');
+    const container = document.getElementById('container');
+    const overlay = document.getElementById('crop-overlay');
+    const cropRect = document.getElementById('crop-rect');
+    const cropInfo = document.getElementById('crop-info');
+    
+    let isDrawing = false;
+    let isResizing = false;
+    let resizeHandle = null;
+    let startX = 0;
+    let startY = 0;
+    let cropData = { x: 0, y: 0, width: 0, height: 0 };
+    
+    // Get image position and scale
+    function getImageBounds() {
+      const rect = image.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      return {
+        left: rect.left - containerRect.left,
+        top: rect.top - containerRect.top,
+        width: rect.width,
+        height: rect.height,
+        naturalWidth: image.naturalWidth,
+        naturalHeight: image.naturalHeight
+      };
+    }
+    
+    // Convert screen coordinates to image coordinates
+    function screenToImage(x, y) {
+      const bounds = getImageBounds();
+      const scaleX = bounds.naturalWidth / bounds.width;
+      const scaleY = bounds.naturalHeight / bounds.height;
+      
+      return {
+        x: Math.round((x - bounds.left) * scaleX),
+        y: Math.round((y - bounds.top) * scaleY)
+      };
+    }
+    
+    // Update crop info display
+    function updateCropInfo() {
+      cropInfo.textContent = `x: ${cropData.x}px, y: ${cropData.y}px, width: ${cropData.width}px, height: ${cropData.height}px`;
+    }
+    
+    // Mouse down - start drawing or resizing
+    overlay.addEventListener('mousedown', (e) => {
+      if (e.target.classList.contains('resize-handle')) {
+        isResizing = true;
+        resizeHandle = e.target;
+        startX = e.clientX;
+        startY = e.clientY;
+      } else {
+        isDrawing = true;
+        const containerRect = container.getBoundingClientRect();
+        startX = e.clientX - containerRect.left;
+        startY = e.clientY - containerRect.top;
+        cropRect.style.left = startX + 'px';
+        cropRect.style.top = startY + 'px';
+        cropRect.style.width = '0px';
+        cropRect.style.height = '0px';
+        cropRect.style.display = 'block';
+      }
+    });
+    
+    // Mouse move - update crop rectangle
+    document.addEventListener('mousemove', (e) => {
+      if (isDrawing) {
+        const containerRect = container.getBoundingClientRect();
+        const currentX = e.clientX - containerRect.left;
+        const currentY = e.clientY - containerRect.top;
+        
+        const width = currentX - startX;
+        const height = currentY - startY;
+        
+        cropRect.style.width = Math.abs(width) + 'px';
+        cropRect.style.height = Math.abs(height) + 'px';
+        cropRect.style.left = (width < 0 ? currentX : startX) + 'px';
+        cropRect.style.top = (height < 0 ? currentY : startY) + 'px';
+      } else if (isResizing && resizeHandle) {
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        const rect = cropRect.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        if (resizeHandle.classList.contains('handle-se')) {
+          cropRect.style.width = (rect.width + deltaX) + 'px';
+          cropRect.style.height = (rect.height + deltaY) + 'px';
+        } else if (resizeHandle.classList.contains('handle-sw')) {
+          cropRect.style.width = (rect.width - deltaX) + 'px';
+          cropRect.style.height = (rect.height + deltaY) + 'px';
+          cropRect.style.left = (rect.left - containerRect.left + deltaX) + 'px';
+        } else if (resizeHandle.classList.contains('handle-ne')) {
+          cropRect.style.width = (rect.width + deltaX) + 'px';
+          cropRect.style.height = (rect.height - deltaY) + 'px';
+          cropRect.style.top = (rect.top - containerRect.top + deltaY) + 'px';
+        } else if (resizeHandle.classList.contains('handle-nw')) {
+          cropRect.style.width = (rect.width - deltaX) + 'px';
+          cropRect.style.height = (rect.height - deltaY) + 'px';
+          cropRect.style.left = (rect.left - containerRect.left + deltaX) + 'px';
+          cropRect.style.top = (rect.top - containerRect.top + deltaY) + 'px';
+        }
+        
+        startX = e.clientX;
+        startY = e.clientY;
+      }
+    });
+    
+    // Mouse up - finish drawing or resizing
+    document.addEventListener('mouseup', () => {
+      if (isDrawing || isResizing) {
+        // Calculate final crop coordinates in image pixels
+        const rect = cropRect.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        const topLeft = screenToImage(rect.left, rect.top);
+        const bottomRight = screenToImage(rect.right, rect.bottom);
+        
+        cropData = {
+          x: topLeft.x,
+          y: topLeft.y,
+          width: bottomRight.x - topLeft.x,
+          height: bottomRight.y - topLeft.y
+        };
+        
+        updateCropInfo();
+      }
+      
+      isDrawing = false;
+      isResizing = false;
+      resizeHandle = null;
+    });
+    
+    // Reset crop
+    function resetCrop() {
+      cropRect.style.display = 'none';
+      cropData = { x: 0, y: 0, width: 0, height: 0 };
+      cropInfo.textContent = 'No crop defined yet';
+    }
+    
+    // Save crop with full crop configuration
+    async function saveCrop() {
+      if (cropData.width === 0 || cropData.height === 0) {
+        alert('Please define a crop area first');
+        return;
+      }
+      
+      const persistCrop = document.getElementById('persist-crop').checked;
+      const padding = parseInt(document.getElementById('padding').value) || 0;
+      
+      // Build the full crop configuration object
+      const cropConfig = {
+        enabled: true,
+        region: {
+          x: cropData.x,
+          y: cropData.y,
+          width: cropData.width,
+          height: cropData.height
+        },
+        scaleMode: 'none',
+        preserveAspectRatio: true,
+        persistToScenario: persistCrop,  // Save to scenario config for reuse
+      };
+      
+      // Add padding if specified
+      if (padding > 0) {
+        cropConfig.padding = {
+          top: padding,
+          right: padding,
+          bottom: padding,
+          left: padding
+        };
+      }
+      
+      try {
+        const response = await fetch('/crop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cropConfig)
+        });
+        
+        if (response.ok) {
+          const message = document.getElementById('message');
+          const persistText = persistCrop ? ' This crop will be applied to all future captures.' : '';
+          message.textContent = '✔ Crop saved!' + persistText + ' You can close this tab.';

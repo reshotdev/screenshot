@@ -1,14 +1,73 @@
 {
-  "name": "@reshotdev/cli",
-  "version": "0.0.1-beta.0",
-  "private": false,
-  "description": "CI/CD screenshot and video capture CLI",
+  "name": "@reshotdev/screenshot",
+  "version": "0.0.1-beta.12",
+  "description": "Screenshot and video capture CLI",
+  "author": "Reshot <hello@reshot.dev>",
   "license": "MIT",
-  "type": "module",
-  "scripts": {
-    "lint": "echo 'lint: ok'",
-    "typecheck": "echo 'typecheck: ok'",
-    "test": "echo 'test: ok'"
+  "homepage": "https://reshot.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reshotdev/screenshot"
   },
-  "engines": { "node": ">=18.0.0" }
+  "bugs": "https://github.com/reshotdev/screenshot/issues",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "screenshots",
+    "cli",
+    "documentation",
+    "visual-testing",
+    "automation",
+    "playwright"
+  ],
+  "bin": {
+    "reshot": "./src/index.js"
+  },
+  "files": [
+    "src/",
+    "web/manager/dist/",
+    "web/cropper/",
+    "web/subtitle-editor/",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "node scripts/test.js",
+    "test:unit": "node --test tests/unit/*.test.js",
+    "test:integration": "node --test tests/integration/*.test.js",
+    "test:all": "node --test tests/unit/*.test.js tests/integration/*.test.js",
+    "test:dry-run": "node src/index.js --help && node src/index.js --version",
+    "test:source": "node src/index.js",
+    "prepublishOnly": "cd web/manager && npm install && npm run build",
+    "ui:build": "cd web/manager && npm install && npm run build",
+    "ui:dev": "cd web/manager && npm install && npm run dev",
+    "lint": "echo 'No linting configured yet'",
+    "pack:check": "npm pack --dry-run"
+  },
+  "dependencies": {
+    "@reshot/compose": "workspace:*",
+    "axios": "^1.6.2",
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "form-data": "^4.0.0",
+    "fs-extra": "^11.2.0",
+    "get-port": "^7.0.0",
+    "inquirer": "^8.2.5",
+    "open": "^9.1.0",
+    "ora": "^7.0.1",
+    "pixelmatch": "^5.3.0",
+    "playwright": "^1.40.0",
+    "pngjs": "^7.0.0",
+    "sharp": "^0.33.2",
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.1",
+    "@aws-sdk/client-s3": "^3.650.0"
+  }
 }
