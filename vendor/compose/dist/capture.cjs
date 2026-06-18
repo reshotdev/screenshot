@@ -1448,4 +1448,3 @@ async function captureUrl(url, opts = {}) {
   shouldFallbackToM4,
   writeArtifact
 });
-//# sourceMappingURL=capture.cjs.map

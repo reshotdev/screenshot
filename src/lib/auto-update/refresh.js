@@ -23,29 +23,17 @@ const fs = require("fs-extra");
 const compose = require("../../commands/compose");
 const apiClient = require("../api-client");
 const specStore = require("./spec");
+const { composeDistDir } = require("../compose-runtime");
 
 // The Phase 4 <Scene> render template — one template serves every eligible
 // composition; the authored camera + captured artifact arrive via env/sidecar.
 const SCENE_TEMPLATE = path.resolve(__dirname, "scene-runtime.compose.tsx");
-const COMPOSE_DIST = path.resolve(__dirname, "../../../../../packages/compose/dist");
 
 // Load the ESM build via dynamic import: pixelmatch v7 (used by the verify diff)
 // is ESM-only and its default export does not survive the bundled CJS interop, so
 // the .mjs is the reliable entrypoint even from this CommonJS module.
 async function loadAutoUpdate() {
-  const monoMjs = path.resolve(
-    __dirname,
-    "../../../../../packages/compose/dist/auto-update.mjs",
-  );
-  if (fs.existsSync(monoMjs)) return import(pathToFileURL(monoMjs).href);
-  try {
-    return await import("@reshot/compose/auto-update");
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      "@reshot/compose/auto-update not found. Run `pnpm --dir packages/compose build`.\n" + message,
-    );
-  }
+  return import(pathToFileURL(path.join(composeDistDir(), "auto-update.mjs")).href);
 }
 
 function captureSettings(spec) {
@@ -61,8 +49,9 @@ function captureSettings(spec) {
 // Load compose's published render + capture entrypoints as ESM (same reason as
 // loadAutoUpdate: the .mjs build is the reliable cross-interop entrypoint).
 async function loadComposeScene() {
-  const render = await import(pathToFileURL(path.join(COMPOSE_DIST, "render.mjs")).href);
-  const capture = await import(pathToFileURL(path.join(COMPOSE_DIST, "capture.mjs")).href);
+  const composeDist = composeDistDir();
+  const render = await import(pathToFileURL(path.join(composeDist, "render.mjs")).href);
+  const capture = await import(pathToFileURL(path.join(composeDist, "capture.mjs")).href);
   return { render: render.render, writeArtifact: capture.writeArtifact };
 }
 
