@@ -1,0 +1,64 @@
+{
+  "name": "@reshot/compose",
+  "version": "0.0.1",
+  "description": "JSX composition primitives and render pipeline for Reshot captures.",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
+      "import": "./dist/jsx-runtime.mjs",
+      "require": "./dist/jsx-runtime.cjs"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./dist/jsx-dev-runtime.d.ts",
+      "import": "./dist/jsx-dev-runtime.mjs",
+      "require": "./dist/jsx-dev-runtime.cjs"
+    },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "import": "./dist/render.mjs",
+      "require": "./dist/render.cjs"
+    },
+    "./capture": {
+      "types": "./dist/capture.d.ts",
+      "import": "./dist/capture.mjs",
+      "require": "./dist/capture.cjs"
+    },
+    "./eligibility": {
+      "types": "./dist/eligibility.d.ts",
+      "import": "./dist/eligibility.mjs",
+      "require": "./dist/eligibility.cjs"
+    },
+    "./auto-update": {
+      "types": "./dist/auto-update.d.ts",
+      "import": "./dist/auto-update.mjs",
+      "require": "./dist/auto-update.cjs"
+    },
+    "./verify": {
+      "types": "./dist/verify.d.ts",
+      "import": "./dist/verify.mjs",
+      "require": "./dist/verify.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@reshot/motion-core": "workspace:*",
+    "esbuild": "^0.27.2",
+    "pixelmatch": "^7.2.0",
+    "playwright-core": "^1.57.0",
+    "pngjs": "^7.0.0",
+    "ssim.js": "^3.5.0"
+  },
+  "license": "MIT"
+}
