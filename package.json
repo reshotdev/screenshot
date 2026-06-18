@@ -4,6 +4,7 @@
   "description": "Screenshot and video capture CLI",
   "author": "Reshot <hello@reshot.dev>",
   "license": "MIT",
+  "packageManager": "pnpm@10.12.4",
   "homepage": "https://reshot.dev",
   "repository": {
     "type": "git",
