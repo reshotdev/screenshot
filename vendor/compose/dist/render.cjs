@@ -556,4 +556,3 @@ function inferDurationMs(html) {
   render,
   resolveChromiumExecutable
 });
-//# sourceMappingURL=render.cjs.map

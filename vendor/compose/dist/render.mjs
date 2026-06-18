@@ -1,3 +1,5 @@
+import { createRequire as __reshotCreateRequire } from 'module'; const require = __reshotCreateRequire(import.meta.url);
+
 // src/render/render.ts
 import { createHash } from "crypto";
 import { mkdir as mkdir3, readFile, rm as rm3, writeFile as writeFile3 } from "fs/promises";
@@ -511,4 +513,3 @@ export {
   render,
   resolveChromiumExecutable
 };
-//# sourceMappingURL=render.mjs.map

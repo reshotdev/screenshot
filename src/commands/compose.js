@@ -2,6 +2,7 @@
 const path = require("path");
 const fs = require("fs-extra");
 const chalk = require("chalk");
+const { composeDistDir } = require("../lib/compose-runtime");
 const {
   DEFAULT_FORMATS,
   assertCaptureExists,
@@ -150,23 +151,7 @@ function normalizeCommandOptions(options) {
 }
 
 function loadComposeRender() {
-  try {
-    return require("@reshot/compose/render");
-  } catch (error) {
-    const monoPath = path.resolve(
-      __dirname,
-      "../../../../packages/compose/dist/render.cjs",
-    );
-    if (fs.existsSync(monoPath)) {
-      return require(monoPath);
-    }
-
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      "@reshot/compose/render not found. Run `pnpm install` at the repo root and `pnpm --dir packages/compose build`.\n" +
-        message,
-    );
-  }
+  return require(path.join(composeDistDir(), "render.cjs"));
 }
 
 async function withComposeEnvironment(env, callback) {

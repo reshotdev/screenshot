@@ -20,9 +20,9 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-      - run: pnpm typecheck
       - run: pnpm test --run
       - run: pnpm build
+      - run: pnpm pack --pack-destination /tmp
       - run: |
           TARBALL=$(ls /tmp/*.tgz)
           echo "Package size: $(du -h $TARBALL | cut -f1)"

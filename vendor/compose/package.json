@@ -2,7 +2,6 @@
   "name": "@reshot/compose",
   "version": "0.0.1",
   "description": "JSX composition primitives and render pipeline for Reshot captures.",
-  "private": true,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -53,12 +52,8 @@
     "dist"
   ],
   "dependencies": {
-    "@reshot/motion-core": "workspace:*",
     "esbuild": "^0.27.2",
-    "pixelmatch": "^7.2.0",
-    "playwright-core": "^1.57.0",
-    "pngjs": "^7.0.0",
-    "ssim.js": "^3.5.0"
+    "playwright-core": "^1.57.0"
   },
   "license": "MIT"
 }

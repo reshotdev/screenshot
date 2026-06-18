@@ -1,3 +1,5 @@
+import { createRequire as __reshotCreateRequire } from 'module'; const require = __reshotCreateRequire(import.meta.url);
+
 // src/capture/index.ts
 import { mkdir as mkdir2, writeFile as writeFile2 } from "fs/promises";
 import { dirname as dirname2 } from "path";
@@ -1412,4 +1414,3 @@ export {
   shouldFallbackToM4,
   writeArtifact
 };
-//# sourceMappingURL=capture.mjs.map

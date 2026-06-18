@@ -1,3 +1,5 @@
+import { createRequire as __reshotCreateRequire } from 'module'; const require = __reshotCreateRequire(import.meta.url);
+
 // src/jsx-runtime.ts
 var Fragment = /* @__PURE__ */ Symbol("Fragment");
 function normalizeChildren(value) {
@@ -23,4 +25,3 @@ export {
   jsxDEV,
   jsxDEV as jsxs
 };
-//# sourceMappingURL=jsx-dev-runtime.mjs.map

@@ -9,19 +9,10 @@
 
 const path = require("path");
 const fs = require("fs-extra");
+const { composeDistDir } = require("./compose-runtime");
 
 function loadCaptureEngine() {
-  try {
-    return require("@reshot/compose/capture");
-  } catch (error) {
-    const monoPath = path.resolve(__dirname, "../../../../packages/compose/dist/capture.cjs");
-    if (fs.existsSync(monoPath)) return require(monoPath);
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      "@reshot/compose/capture not found. Run `pnpm install` at the repo root and `pnpm --dir packages/compose build`.\n" +
-        message,
-    );
-  }
+  return require(path.join(composeDistDir(), "capture.cjs"));
 }
 
 /**
